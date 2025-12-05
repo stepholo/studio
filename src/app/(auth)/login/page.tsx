@@ -26,10 +26,18 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/');
     } catch (error: any) {
+      let description = 'An unexpected error occurred. Please try again.';
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
+        description = 'No user found with this email. Please check your email or sign up.';
+      } else if (error.code === 'auth/wrong-password') {
+        description = 'Invalid password. Please try again.';
+      } else if (error.message) {
+        description = error.message;
+      }
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error.message,
+        description: description,
       });
     }
   };
@@ -70,7 +78,7 @@ export default function LoginPage() {
                       className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
                       onClick={() => setShowPassword(prev => !prev)}
                     >
-                      {showPassword ? <EyeOff /> : <Eye />}
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
               </div>
