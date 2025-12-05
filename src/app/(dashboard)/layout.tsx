@@ -44,7 +44,7 @@ import { useFirebase } from '@/firebase/provider'
 import { signOut } from 'firebase/auth'
 
 const navItems = [
-    { href: "/", icon: Home, label: "Dashboard" },
+    { href: "/dashboard", icon: Home, label: "Dashboard" },
     { href: "/institutions", icon: Landmark, label: "Institutions" },
     { href: "/transactions", icon: Wallet, label: "Transactions", badge: "6" },
     { href: "/insights", icon: LineChart, label: "Insights" },
@@ -79,7 +79,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="hidden border-r bg-muted/40 md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
+            <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
               <AppLogo />
             </Link>
             <Button variant="outline" size="icon" className="ml-auto h-8 w-8">

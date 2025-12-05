@@ -188,7 +188,7 @@ export default function SignupPage() {
               Continue <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={() => router.push('/')} className="w-full bg-gradient-to-r from-primary to-accent text-white">
+            <Button onClick={() => router.push('/dashboard')} className="w-full bg-gradient-to-r from-primary to-accent text-white">
               Enter Dashboard
             </Button>
           )}

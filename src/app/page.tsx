@@ -6,10 +6,27 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { ArrowRight, Search } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useUser } from '@/firebase/auth/use-user';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function LandingPage() {
+  const { user, loading } = useUser();
+  const router = useRouter();
+
   const heroImage = PlaceHolderImages.find(img => img.id === 'landing-hero');
   const phoneImage = PlaceHolderImages.find(img => img.id === 'landing-phone');
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+
+
+  if (loading || user) {
+    return <div>Loading...</div>; // Or a proper loading spinner
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
