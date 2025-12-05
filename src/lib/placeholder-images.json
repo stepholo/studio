@@ -11,6 +11,18 @@
       "description": "An illustration of a secure shield or circle for the final step of the signup flow.",
       "imageUrl": "https://images.unsplash.com/photo-1758371541371-874cdcede945?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzZWN1cmUlMjBzaGllbGR8ZW58MHx8fHwxNzY0OTI3NDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "secure shield"
+    },
+    {
+      "id": "landing-hero",
+      "description": "Blue sky with clouds for the hero section background.",
+      "imageUrl": "https://images.unsplash.com/photo-1617150119111-09bbb85178b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxibHVlJTIwc2t5fGVufDB8fHx8MTc2NDg2MTU0Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "blue sky"
+    },
+    {
+      "id": "landing-phone",
+      "description": "Phone displaying a financial application interface.",
+      "imageUrl": "https://images.unsplash.com/photo-1512428559087-560fa5ceab42?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwaG9uZSUyMGFwcHxlbnwwfHx8fDE3NjQ4ODY0OTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "phone app"
     }
   ]
 }
