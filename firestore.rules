@@ -1,0 +1,31 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if the user is the owner of the document
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Rules for the 'users' collection
+    match /users/{userId} {
+      // Allow a user to read and write their own profile data.
+      // This includes creating their profile on signup.
+      allow read, write: if isOwner(userId);
+
+      // Rules for the 'transactions' subcollection
+      match /transactions/{transactionId} {
+        // Allow a user to manage their own transactions (list, create, read, update, delete).
+        allow read, write: if isOwner(userId);
+      }
+
+      // Rules for the 'institutions' subcollection
+      match /institutions/{institutionId} {
+        // Allow a user to manage their own connected institutions.
+        allow read, write: if isOwner(userId);
+      }
+    }
+  }
+}
