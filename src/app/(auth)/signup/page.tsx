@@ -14,6 +14,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowRight, Check, CreditCard, ShieldCheck, TrendingUp, Upload, Smartphone, Landmark, PiggyBank, CircleDollarSign, Eye, EyeOff } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { useFirebase } from '@/firebase/provider';
+import { useToast } from '@/hooks/use-toast';
+
 
 const totalSteps = 4;
 
@@ -43,13 +47,50 @@ const pageTransition = {
 };
 
 export default function SignupPage() {
+  const { auth } = useFirebase();
+  const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const secureShieldImage = PlaceHolderImages.find(img => img.id === 'signup-secure-shield');
 
-  const nextStep = () => setStep(prev => (prev < totalSteps ? prev + 1 : prev));
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleSignup = async () => {
+    if (password !== confirmPassword) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Passwords do not match.',
+      });
+      return;
+    }
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, {
+        displayName: fullName,
+      });
+      nextStep();
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Sign-up Failed',
+        description: error.message,
+      });
+    }
+  };
+
+  const nextStep = () => {
+     if (step === 1) {
+      handleSignup();
+    } else {
+      setStep(prev => (prev < totalSteps ? prev + 1 : prev));
+    }
+  }
   const prevStep = () => setStep(prev => (prev > 1 ? prev - 1 : prev));
 
   const renderStep = () => {
@@ -64,16 +105,16 @@ export default function SignupPage() {
             <CardContent className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="full-name">Full Name</Label>
-                <Input id="full-name" placeholder="John Doe" required />
+                <Input id="full-name" placeholder="John Doe" required value={fullName} onChange={e => setFullName(e.target.value)} />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="email">Email or Phone Number</Label>
-                <Input id="email" type="email" placeholder="m@example.com" required />
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={e => setEmail(e.target.value)} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Input id="password" type={showPassword ? "text" : "password"} />
+                  <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} />
                    <Button
                     type="button"
                     variant="ghost"
@@ -88,7 +129,7 @@ export default function SignupPage() {
               <div className="grid gap-2">
                 <Label htmlFor="confirm-password">Confirm Password</Label>
                 <div className="relative">
-                  <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} />
+                  <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
                   <Button
                     type="button"
                     variant="ghost"

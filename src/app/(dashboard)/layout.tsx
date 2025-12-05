@@ -1,18 +1,17 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import Link from "next/link"
+import { useRouter } from 'next/navigation'
 import {
   Bell,
-  CircleUser,
   Home,
   LineChart,
   Menu,
-  Package2,
   Search,
-  Users,
   Wallet,
   Landmark,
+  LogOut,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -39,8 +38,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { AppLogo } from '@/components/app-logo'
-import { mockUser } from '@/lib/data'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useUser } from '@/firebase/auth/use-user'
+import { useFirebase } from '@/firebase/provider'
+import { signOut } from 'firebase/auth'
 
 const navItems = [
     { href: "/", icon: Home, label: "Dashboard" },
@@ -50,6 +51,29 @@ const navItems = [
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useUser();
+  const router = useRouter();
+  const { auth } = useFirebase();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/login');
+  };
+  
+  if (loading) {
+      return <div>Loading...</div>
+  }
+
+  if (!user) {
+      return null;
+  }
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
@@ -161,19 +185,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
                 <Avatar>
-                    <AvatarImage src={mockUser.avatarUrl} alt={mockUser.name} />
-                    <AvatarFallback>{mockUser.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? ''} />
+                    <AvatarFallback>{user.displayName?.charAt(0) ?? user.email?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{user.displayName ?? user.email}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
