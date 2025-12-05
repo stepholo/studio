@@ -50,8 +50,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isSignedUp, setIsSignedUp] = useState(false);
-
+  
   const handleSignup = async () => {
     if (password !== confirmPassword) {
       toast({
@@ -66,11 +65,11 @@ export default function SignupPage() {
       await updateProfile(userCredential.user, {
         displayName: fullName,
       });
-      setIsSignedUp(true);
-       toast({
+      toast({
         title: 'Account Created!',
-        description: "You've successfully signed up. Click Continue.",
+        description: "You've successfully signed up. Please proceed to the next step.",
       });
+      setStep(prev => (prev < totalSteps ? prev + 1 : prev));
     } catch (error: any) {
       let description = 'An unexpected error occurred. Please try again.';
       if (error.code === 'auth/email-already-in-use') {
@@ -88,11 +87,7 @@ export default function SignupPage() {
 
   const nextStep = () => {
      if (step === 1) {
-        if (!isSignedUp) {
-            handleSignup();
-        } else {
-            setStep(prev => (prev < totalSteps ? prev + 1 : prev));
-        }
+        handleSignup();
     } else {
       setStep(prev => (prev < totalSteps ? prev + 1 : prev));
     }
@@ -190,7 +185,7 @@ export default function SignupPage() {
           
           {step < totalSteps ? (
              <Button onClick={nextStep} className="bg-gradient-to-r from-primary to-accent text-white">
-              {step === 1 && !isSignedUp ? 'Sign Up' : 'Continue'} <ArrowRight className="ml-2 h-4 w-4" />
+              Continue <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
             <Button onClick={() => router.push('/')} className="w-full bg-gradient-to-r from-primary to-accent text-white">
