@@ -80,9 +80,7 @@ export default function LandingPage() {
                 A unified path to better credit.
               </h1>
               <p className="mt-4 text-lg text-white/80 md:text-xl">
-                The Circle is your personal AI Financial Advisor. Track your
-                spending, get insights, and optimize your financial
-                future—all in one place.
+                All your money , one score, better loans.
               </p>
               <Button asChild size="lg" className="mt-8 bg-gradient-to-r from-primary to-accent text-white">
                 <Link href="/signup">
