@@ -12,26 +12,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowRight, Check, CreditCard, ShieldCheck, TrendingUp, Upload, Smartphone, Landmark, PiggyBank, CircleDollarSign, Eye, EyeOff } from 'lucide-react';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { ArrowRight, CreditCard, ShieldCheck, TrendingUp, Eye, EyeOff } from 'lucide-react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useFirebase } from '@/firebase/provider';
 import { useToast } from '@/hooks/use-toast';
 
 
-const totalSteps = 4;
+const totalSteps = 2;
 
 const goals = [
   { id: 'improve', label: 'I want to improve my credit score', icon: TrendingUp },
   { id: 'access', label: 'I want easier access to credit', icon: CreditCard },
   { id: 'insights', label: 'I want financial insights', icon: ShieldCheck },
-];
-
-const institutions = [
-  { name: 'M-Pesa', icon: Smartphone, type: 'upload' },
-  { name: 'Your Bank', icon: Landmark, type: 'connect' },
-  { name: 'Your SACCO', icon: PiggyBank, type: 'connect' },
-  { name: 'Digital Lenders', icon: CircleDollarSign, description: 'Tala, Branch, etc.' },
 ];
 
 const pageVariants = {
@@ -53,7 +45,6 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
-  const secureShieldImage = PlaceHolderImages.find(img => img.id === 'signup-secure-shield');
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -177,52 +168,6 @@ export default function SignupPage() {
                 </div>
               ))}
             </CardContent>
-          </motion.div>
-        );
-      case 3:
-        return (
-          <motion.div key="step3" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>
-            <CardHeader>
-              <CardTitle className="font-headline text-2xl">Connect Your Financial Accounts</CardTitle>
-              <CardDescription>Aggregate your financial behavior to build your unified credit score.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              {institutions.map(inst => (
-                <Card key={inst.name} className="overflow-hidden">
-                  <CardContent className="p-4 flex items-center">
-                    <inst.icon className="h-8 w-8 text-primary mr-4" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{inst.name}</h3>
-                      {inst.description && <p className="text-sm text-muted-foreground">{inst.description}</p>}
-                    </div>
-                    {inst.type === 'upload' ? (
-                      <Button variant="outline" size="sm"><Upload className="mr-2 h-4 w-4" /> Upload</Button>
-                    ) : (
-                      <Button variant="outline" size="sm"><Check className="mr-2 h-4 w-4" /> Connect</Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </CardContent>
-          </motion.div>
-        );
-      case 4:
-        return (
-          <motion.div key="step4" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>
-            <CardHeader className="items-center text-center">
-              {secureShieldImage &&
-                <Image
-                    src={secureShieldImage.imageUrl}
-                    alt={secureShieldImage.description}
-                    data-ai-hint={secureShieldImage.imageHint}
-                    width={150}
-                    height={150}
-                    className="mb-4"
-                />
-              }
-              <CardTitle className="font-headline text-2xl">You're all set!</CardTitle>
-              <CardDescription>Let&apos;s build your credit future, together.</CardDescription>
-            </CardHeader>
           </motion.div>
         );
     }
