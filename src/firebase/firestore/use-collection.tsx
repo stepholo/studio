@@ -11,12 +11,18 @@ export function useCollection<T>(ref: Query | null, options?: UseCollectionOptio
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
-    const constraints = options?.queryConstraints;
+    // Serialize constraints to create a stable dependency for useMemo
+    const serializedConstraints = useMemo(() => {
+        if (!options?.queryConstraints) return '';
+        // This is a simple serialization. A more robust one might be needed for complex objects.
+        return JSON.stringify(options.queryConstraints.map(c => c.toString()));
+    }, [options?.queryConstraints]);
 
     const q = useMemo(() => {
         if (!ref) return null;
-        return constraints ? query(ref, ...constraints) : ref;
-    }, [ref, constraints]);
+        return options?.queryConstraints ? query(ref, ...options.queryConstraints) : ref;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ref, serializedConstraints]);
 
     useEffect(() => {
         if (!q) {
