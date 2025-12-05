@@ -1,128 +1,86 @@
+```markdown
 # The Circle (Unified Youth Credit Score)
 
-📌 Overview
+Overview
 
-The Circle is a web application that helps Kenyan youth access fair credit by combining their financial data from M‑Pesa, banks, SACCOs, and digital lenders into one unified credit score. Users can connect financial institutions or upload statements, which the system processes using Google Cloud services to generate a clear, accurate score.
+The Circle is a Next.js TypeScript web app that provides a unified view of a user's financial activity to help compute a clear credit score. This repository contains the frontend app, UI components, and Firebase configuration used to run and host the site.
 
-This empowers young people to access loans with confidence while giving lenders a complete view of a customer’s financial behavior.
+This README has been scoped to reflect only what is implemented in this repository.
 
-🚀 Key Features
+What is implemented in this repo
+- Next.js (app directory) landing page and UI
+  - See src/app/page.tsx — the landing page that redirects signed-in users to /dashboard
+- Firebase Authentication integration (client hooks under src/firebase/)
+- UI components and styling (TailwindCSS, components under src/components/)
+- Firebase hosting / configuration and Firestore rules present in the repo
 
-- Unified Credit Score: Combines data from M‑Pesa, banks, SACCOs, and digital lenders.
-- Institution Connections: Users can add and manage all their financial accounts.
-- Statement Upload: Accepts M‑Pesa statements (PDF/CSV) using OCR processing.
-- Real‑time Transaction Logging: New activities across institutions update the user’s score.
-- Insights Dashboard: Shows spending habits, income patterns, and score improvement tips.
-- Secure Login/Signup: Youth‑friendly, fast sign-in experience via phone/email.
-- Google Cloud Powered: OCR, ML scoring, pipelines, and secure data storage.
+What is NOT implemented here
+- Machine learning models (BigQuery ML / Vertex AI) are not part of this repo
+- OCR or statement-parsing pipelines are not implemented in this codebase
+- External data ingestion (M‑Pesa connectors, bank integrations) are not included
 
-🛠️ Tech Stack
+Quick links
+- App entry / landing page: src/app/page.tsx
+- Firebase auth utilities: src/firebase/auth/
+- UI components: src/components/
+- Tailwind config: tailwind.config.ts
+- Next.js config: next.config.ts
+- Firebase config / hosting metadata: .firebaserc, apphosting.yaml, firestore.rules
 
-Frontend
-- HTML / CSS / JavaScript
-- React / Next.js (optional)
-- Modern sleek UI for youth users
+Key features (what the code currently implements)
+- Landing page with hero and call-to-action (Get Started)
+- Links to Log In and Sign Up pages (UI routing present)
+- Client-side auth check that redirects authenticated users to /dashboard
+- Responsive UI built with Tailwind CSS and Next.js Image optimization
 
-Backend
-- Google Cloud Run (API service)
-- Firebase Authentication (user login)
-- Cloud Functions / PubSub for data pipeline
-- Cloud Storage for statement uploads
-
-Machine Learning
-- BigQuery ML for credit scoring
-- Vertex AI (optional)
-
-OCR + Data Parsing
-- Google Cloud Vision API
-- Python/Node.js parsers for PDFs & CSVs
-
-📂 Project Structure
-
-/circle-app
-│
-├── frontend/           # UI pages and components
-├── backend/            # APIs, parsing logic, scoring logic
-├── cloud-functions/    # PubSub, Data processing
-├── ml/                 # BigQuery ML models
-└── README.md
-
-⚙️ How It Works
-
-1. User signs up on The Circle using email or phone.
-2. User adds financial institutions or uploads an M‑Pesa statement.
-3. The statement is processed with OCR and converted into clean transaction data.
-4. All financial activity is aggregated across connected accounts.
-5. Google Cloud ML models compute a Unified Credit Score.
-6. The user sees their score, insights, and can share it with lenders.
-
-🌐 Core Screens
-
-- Login / Signup
-- Add Institutions
-- Upload M‑Pesa Statements
-- Unified Credit Score Dashboard
-- Transaction History
-- Insights & Recommendations
-
-🔒 Security
-
+Tech stack
+- Next.js (TypeScript)
+- React
+- Tailwind CSS
 - Firebase Authentication
-- Encrypted data storage
-- User-authorized sharing only
-- Google Cloud IAM and role-based access
+- Firebase Hosting metadata included
 
-📦 Installation (Local)
+Local development
 
 ```bash
-git clone https://github.com/your-repo/the-circle.git
-cd the-circle
+git clone https://github.com/stepholo/studio.git
+cd studio
 npm install
 npm run dev
+# Visit http://localhost:3000
 ```
 
-☁️ Deployment (Google Cloud)
+Recommended scripts
+- npm run dev — development server
+- npm run build — build for production
+- npm run start — run the production build
+- npm test — run tests (if tests are added)
 
-Deploy Backend:
+Deployment (Firebase Hosting)
+This repository contains Firebase hosting metadata. To deploy to Firebase Hosting:
 
 ```bash
-gcloud run deploy circle-backend \
-  --source . \
-  --region us-central1 \
-  --platform managed
+npm install -g firebase-tools
+firebase login
+firebase init hosting
+firebase deploy --only hosting
 ```
 
-Deploy Functions:
+(Adjust commands to match your Firebase project and setup.)
 
-```bash
-gcloud functions deploy parseStatement \
-  --trigger-topic=process-statement
-```
+Contributing
+Contributions are welcome. If you plan to add new features (for example: statement ingestion, OCR parsing, ML models or external integrations), please open an issue describing the change before submitting a PR. Keep changes small and focused.
 
-🧪 Testing
+Team
+- Philip Coutinho
+- Stephen Oloo
+- Reuben Ngeywo
+- Rym Njuguna
+- Enock Mases
 
-```bash
-npm test
-```
+License
+- MIT (add a LICENSE file if you want to publish under this license)
 
-👥 Team
-
-- Oloo Brian
-- Philip Cotmo
-- Enoch Masese
-
-📄 License
-
-MIT License (or another license of your choice). Add a LICENSE file to the repository.
-
-💬 Contact
-
-For inquiries, collaboration, or feedback:
-
+Contact
 Team Circle – FinTech Hackathon
-
----
-
-Notes
-- This README replaces the earlier minimal Firebase Studio starter README with a project-focused overview for "The Circle". If you want to restore the original starter notes or keep both, I can merge them into a single README or split into docs/.
-- Repository language composition: TypeScript 98.5% + Other 1.5%.
+```
