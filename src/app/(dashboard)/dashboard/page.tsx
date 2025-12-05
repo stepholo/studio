@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { CreditScoreWidget } from "@/components/credit-score-widget"
 import { mockCreditScore, mockTransactions } from "@/lib/data"
-import { TriangleUp, ArrowUpRight, Activity, DollarSign } from "lucide-react"
+import { Triangle, ArrowUpRight, Activity, DollarSign } from "lucide-react"
 
 export default function DashboardPage() {
   const recentTransactions = mockTransactions.slice(0, 5);
@@ -31,7 +31,7 @@ export default function DashboardPage() {
   return (
     <>
       <Alert className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
-        <TriangleUp className="h-4 w-4 text-primary" />
+        <Triangle className="h-4 w-4 text-primary" />
         <AlertTitle className="font-bold text-primary">Stay on Track!</AlertTitle>
         <AlertDescription>
           You have an upcoming loan payment in 5 days. Paying on time boosts your score.
