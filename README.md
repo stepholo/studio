@@ -1,4 +1,3 @@
-```markdown
 # The Circle (Unified Youth Credit Score)
 
 Overview
@@ -83,4 +82,3 @@ License
 
 Contact
 Team Circle – FinTech Hackathon
-```
