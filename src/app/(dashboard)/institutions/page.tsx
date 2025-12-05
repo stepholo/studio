@@ -12,13 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Upload, RefreshCw, Smartphone, PiggyBank, CircleDollarSign, HandCoins, Landmark, Loader2 } from "lucide-react";
 import { useUser } from "@/firebase/auth/use-user";
 import { useCollection } from "@/firebase/firestore/use-collection";
-import { collection, doc, updateDoc, writeBatch } from "firebase/firestore";
+import { collection, doc, updateDoc } from "firebase/firestore";
 import { useFirebase } from "@/firebase/provider";
 import type { Institution } from "@/lib/types";
-import { mockInstitutions } from "@/lib/data";
 import React from "react";
 import { AddInstitutionDialog } from '@/components/add-institution-dialog';
 import { Skeleton } from "@/components/ui/skeleton";
+import { errorEmitter } from "@/firebase/error-emitter";
+import { FirestorePermissionError } from "@/firebase/errors";
 
 const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
   Smartphone,
@@ -36,20 +37,29 @@ export default function InstitutionsPage() {
   const institutionsRef = React.useMemo(() => user ? collection(db, 'users', user.uid, 'institutions') : null, [user, db]);
   const { data: institutions, loading } = useCollection<Institution>(institutionsRef);
 
-  const connectInstitution = async (institution: Institution) => {
+  const connectInstitution = (institution: Institution) => {
      if (!user || !institution.id) return;
     setConnectingId(institution.id);
     
+    const docRef = doc(db, 'users', user.uid, 'institutions', institution.id);
+    const updatedData = { status: 'Connected' };
+
     // In a real app, this would involve an OAuth flow.
     // Here we'll just update the status in Firestore.
-    try {
-        const docRef = doc(db, 'users', user.uid, 'institutions', institution.id);
-        await updateDoc(docRef, { status: 'Connected' });
-    } catch (error) {
+    updateDoc(docRef, updatedData)
+      .catch(error => {
+        if (error.code === 'permission-denied') {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'update',
+            requestResourceData: updatedData
+          }));
+        }
         console.error("Failed to connect institution:", error);
-    } finally {
+      })
+      .finally(() => {
         setConnectingId(null);
-    }
+      });
   };
 
 

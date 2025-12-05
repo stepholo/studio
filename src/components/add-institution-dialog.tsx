@@ -25,6 +25,8 @@ import { useFirebase } from '@/firebase/provider';
 import { useUser } from '@/firebase/auth/use-user';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const institutionTypes = [
   { value: 'Bank', label: 'Bank', icon: Landmark },
@@ -52,7 +54,7 @@ export function AddInstitutionDialog({ children }: { children: React.ReactNode }
   const [type, setType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !name || !type) {
       toast({
@@ -64,38 +66,42 @@ export function AddInstitutionDialog({ children }: { children: React.ReactNode }
     }
 
     setIsLoading(true);
-    try {
-      const institutionsRef = collection(db, 'users', user.uid, 'institutions');
-      const docRef = await addDoc(institutionsRef, {
+    const institutionsRef = collection(db, 'users', user.uid, 'institutions');
+    const newInstitution = {
         name,
         type,
         status: 'Not Connected',
         logo: iconMap[type] || 'Landmark',
         createdAt: serverTimestamp(),
-      });
-      
-      // The document now has an ID. We can use it if needed.
+    };
 
+    addDoc(institutionsRef, newInstitution).then(docRef => {
       toast({
         title: 'Institution Added',
         description: `${name} has been successfully added.`,
       });
       
-      // Reset form and close dialog
       setName('');
       setType('');
       setOpen(false);
-
-    } catch (error) {
+    }).catch(error => {
       console.error('Error adding institution:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to add institution. Please try again.',
-      });
-    } finally {
+      if (error.code === 'permission-denied') {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: institutionsRef.path,
+          operation: 'create',
+          requestResourceData: newInstitution
+        }));
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to add institution. Please try again.',
+        });
+      }
+    }).finally(() => {
       setIsLoading(false);
-    }
+    });
   };
 
   return (

@@ -18,6 +18,8 @@ import { useFirebase } from '@/firebase/provider';
 import { useToast } from '@/hooks/use-toast';
 import { doc, setDoc, writeBatch } from 'firebase/firestore';
 import { mockCreditScore, mockInstitutions, mockTransactions } from '@/lib/data';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
 const totalSteps = 2;
@@ -55,7 +57,7 @@ export default function SignupPage() {
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
-  const seedInitialData = async (userId: string) => {
+  const seedInitialData = (userId: string) => {
     const batch = writeBatch(db);
 
     // Seed user profile
@@ -70,7 +72,6 @@ export default function SignupPage() {
     batch.set(userProfileRef, userProfileData);
 
     // Seed transactions
-    const transactionsRef = doc(db, 'users', userId, 'transactions', 'initial-data');
     mockTransactions.forEach((transaction, index) => {
         const transRef = doc(db, 'users', userId, 'transactions', `txn${index+1}`);
         batch.set(transRef, transaction);
@@ -83,7 +84,17 @@ export default function SignupPage() {
       batch.set(docRef, { ...inst, status: initialStatus });
     });
 
-    await batch.commit();
+    return batch.commit().catch(error => {
+      if (error.code === 'permission-denied') {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: `users/${userId} and subcollections`,
+          operation: 'write',
+          requestResourceData: { userProfileData, mockTransactions, mockInstitutions }
+        }));
+      }
+      // Re-throw the error to be caught by the calling function's catch block
+      throw error;
+    });
   };
 
 
@@ -139,11 +150,14 @@ export default function SignupPage() {
         router.push('/dashboard');
     } catch(error) {
         console.error("Error finishing setup: ", error);
-        toast({
-            variant: 'destructive',
-            title: 'Setup Failed',
-            description: 'Could not initialize your account data. Please try again.',
-        });
+        // The error is already emitted by seedInitialData, so we just need to inform the user.
+        if ((error as any).code !== 'permission-denied') {
+            toast({
+                variant: 'destructive',
+                title: 'Setup Failed',
+                description: 'Could not initialize your account data. Please try again.',
+            });
+        }
     } finally {
         setIsLoading(false);
     }

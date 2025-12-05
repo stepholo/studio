@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import { onSnapshot, Query, DocumentData, query, QueryConstraint } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface UseCollectionOptions {
     queryConstraints?: QueryConstraint[];
@@ -11,11 +13,11 @@ export function useCollection<T>(ref: Query | null, options?: UseCollectionOptio
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
-    // Serialize constraints to create a stable dependency for useMemo
     const serializedConstraints = useMemo(() => {
         if (!options?.queryConstraints) return '';
-        // This is a simple serialization. A more robust one might be needed for complex objects.
-        return JSON.stringify(options.queryConstraints.map(c => c.toString()));
+        // A simple but effective way to create a stable dependency string.
+        // It's imperfect but good enough for common `where` clauses.
+        return options.queryConstraints.map(c => (c as any)._field + (c as any)._op + (c as any)._value).join(',');
     }, [options?.queryConstraints]);
 
     const q = useMemo(() => {
@@ -42,13 +44,19 @@ export function useCollection<T>(ref: Query | null, options?: UseCollectionOptio
             setLoading(false);
             setError(null);
         }, (err) => {
-            console.error(err);
+            console.error("Error subscribing to collection:", err);
+            if (err.code === 'permission-denied') {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: ref!.path,
+                    operation: 'list',
+                }));
+            }
             setError(err);
             setLoading(false);
         });
 
         return () => unsubscribe();
-    }, [q]);
+    }, [q, ref]);
 
     return { data, loading, error };
 }
