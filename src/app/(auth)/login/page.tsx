@@ -6,10 +6,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AppLogo } from '@/components/app-logo';
-import { Smartphone, Mail } from 'lucide-react';
+import { Smartphone, Mail, Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +44,18 @@ export default function LoginPage() {
                         Forgot your password?
                     </Link>
                 </div>
-                <Input id="password" type="password" required />
+                <div className="relative">
+                  <Input id="password" type={showPassword ? 'text' : 'password'} required />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                    onClick={() => setShowPassword(prev => !prev)}
+                  >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                  </Button>
+                </div>
             </div>
             <Button onClick={handleLogin} type="submit" className="w-full bg-gradient-to-r from-primary to-accent text-white">
                 Login

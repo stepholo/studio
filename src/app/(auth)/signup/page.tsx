@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowRight, Check, CreditCard, ShieldCheck, TrendingUp, Upload, Smartphone, Landmark, PiggyBank, CircleDollarSign } from 'lucide-react';
+import { ArrowRight, Check, CreditCard, ShieldCheck, TrendingUp, Upload, Smartphone, Landmark, PiggyBank, CircleDollarSign, Eye, EyeOff } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const totalSteps = 4;
@@ -44,6 +44,8 @@ const pageTransition = {
 
 export default function SignupPage() {
   const [step, setStep] = useState(1);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const secureShieldImage = PlaceHolderImages.find(img => img.id === 'signup-secure-shield');
 
@@ -70,11 +72,33 @@ export default function SignupPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" />
+                <div className="relative">
+                  <Input id="password" type={showPassword ? "text" : "password"} />
+                   <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                    onClick={() => setShowPassword(prev => !prev)}
+                  >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                  </Button>
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="confirm-password">Confirm Password</Label>
-                <Input id="confirm-password" type="password" />
+                <div className="relative">
+                  <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                    onClick={() => setShowConfirmPassword(prev => !prev)}
+                  >
+                    {showConfirmPassword ? <EyeOff /> : <Eye />}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </motion.div>
