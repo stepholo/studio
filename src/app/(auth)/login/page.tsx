@@ -6,11 +6,24 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AppLogo } from '@/components/app-logo';
-import { Smartphone, Mail, Eye, EyeOff } from 'lucide-react';
+import { Smartphone, Mail, Eye, EyeOff, Loader } from 'lucide-react';
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useFirebase } from '@/firebase/provider';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
+
+const pageVariants = {
+  initial: { opacity: 0, x: 50 },
+  in: { opacity: 1, x: 0 },
+  out: { opacity: 0, x: -50 },
+};
+
+const pageTransition = {
+  type: "tween",
+  ease: "anticipate",
+  duration: 0.5,
+};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,9 +32,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
@@ -39,16 +54,18 @@ export default function LoginPage() {
         title: 'Login Failed',
         description: description,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <>
+    <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>
       <div className="grid gap-2 text-center">
         <AppLogo className="mb-4 justify-center" />
-        <h1 className="text-3xl font-bold font-headline">Welcome to The Circle</h1>
+        <h1 className="text-3xl font-bold font-headline">Welcome back</h1>
         <p className="text-balance text-muted-foreground">
-          Your unified path to better credit.
+          Enter your credentials to access your account.
         </p>
       </div>
       <Card>
@@ -60,7 +77,7 @@ export default function LoginPage() {
           <CardContent className="grid gap-4">
               <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
               </div>
               <div className="grid gap-2">
                   <div className="flex items-center">
@@ -70,19 +87,21 @@ export default function LoginPage() {
                       </Link>
                   </div>
                   <div className="relative">
-                    <Input id="password" type={showPassword ? 'text' : 'password'} required value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <Input id="password" type={showPassword ? 'text' : 'password'} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
                       onClick={() => setShowPassword(prev => !prev)}
+                      disabled={isLoading}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
               </div>
-              <Button type="submit" className="w-full bg-gradient-to-r from-primary to-accent text-white">
+              <Button type="submit" className="w-full bg-gradient-to-r from-primary to-accent text-white" disabled={isLoading}>
+                  {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
                   Login
               </Button>
               
@@ -98,8 +117,8 @@ export default function LoginPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline"><Mail className="mr-2 h-4 w-4" /> Google</Button>
-                  <Button variant="outline"><Smartphone className="mr-2 h-4 w-4" /> Phone OTP</Button>
+                  <Button variant="outline" disabled={isLoading}><Mail className="mr-2 h-4 w-4" /> Google</Button>
+                  <Button variant="outline" disabled={isLoading}><Smartphone className="mr-2 h-4 w-4" /> Phone OTP</Button>
               </div>
           </CardContent>
           <CardFooter className="flex flex-col items-start gap-4">
@@ -110,7 +129,7 @@ export default function LoginPage() {
                   </Link>
               </div>
               <p className="px-8 text-center text-xs text-muted-foreground">
-                  Securely powered by Google Cloud. By continuing, you agree to our{' '}
+                  By continuing, you agree to our{' '}
                   <Link href="#" className="underline underline-offset-4 hover:text-primary">
                       Terms of Service
                   </Link>{' '}
@@ -123,6 +142,6 @@ export default function LoginPage() {
           </CardFooter>
         </form>
       </Card>
-    </>
+    </motion.div>
   );
 }

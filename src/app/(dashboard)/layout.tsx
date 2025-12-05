@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react'
 import Link from "next/link"
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   Bell,
   Home,
@@ -42,17 +42,20 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useUser } from '@/firebase/auth/use-user'
 import { useFirebase } from '@/firebase/provider'
 import { signOut } from 'firebase/auth'
+import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const navItems = [
     { href: "/dashboard", icon: Home, label: "Dashboard" },
     { href: "/institutions", icon: Landmark, label: "Institutions" },
-    { href: "/transactions", icon: Wallet, label: "Transactions", badge: "6" },
+    { href: "/transactions", icon: Wallet, label: "Transactions" },
     { href: "/insights", icon: LineChart, label: "Insights" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
   const { auth } = useFirebase();
 
   useEffect(() => {
@@ -66,12 +69,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/login');
   };
   
-  if (loading) {
-      return <div>Loading...</div>
-  }
-
-  if (!user) {
-      return null;
+  if (loading || !user) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="p-4 lg:p-6 w-full max-w-4xl mx-auto flex flex-col gap-4">
+              <Skeleton className="h-12 w-full" />
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Skeleton className="h-64 lg:col-span-2 row-span-2" />
+                  <Skeleton className="h-32" />
+                  <Skeleton className="h-32" />
+                  <Skeleton className="h-32 lg:col-span-2" />
+              </div>
+              <Skeleton className="h-96" />
+          </div>
+        </div>
+      )
   }
 
   return (
@@ -93,7 +105,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+                    pathname === item.href && "text-primary bg-muted"
+                  )}
                 >
                   <item.icon className="h-4 w-4" />
                   {item.label}
@@ -144,7 +159,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                    className={cn(
+                      "mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground",
+                       pathname === item.href && "text-foreground bg-muted"
+                    )}
                   >
                     <item.icon className="h-5 w-5" />
                     {item.label}
@@ -197,14 +215,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Logout</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/20">
           {children}
         </main>
       </div>

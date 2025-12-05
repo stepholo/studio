@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useUser } from '@/firebase/auth/use-user';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LandingPage() {
   const { user, loading } = useUser();
@@ -25,7 +26,14 @@ export default function LandingPage() {
 
 
   if (loading || user) {
-    return <div>Loading...</div>; // Or a proper loading spinner
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="p-4 lg:p-6 w-full max-w-4xl mx-auto flex flex-col gap-4">
+              <Skeleton className="h-96 w-full" />
+              <Skeleton className="h-64" />
+          </div>
+        </div>
+      )
   }
 
   return (
@@ -62,40 +70,25 @@ export default function LandingPage() {
               fill
               className="object-cover"
               data-ai-hint={heroImage.imageHint}
+              priority
             />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent"></div>
-          <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white">
-            <div className="max-w-3xl px-4">
+          <div className="relative z-10 flex h-full flex-col items-center justify-center text-center">
+             <div className="max-w-3xl px-4 text-white">
               <h1 className="font-headline text-5xl font-bold md:text-7xl">
-                Own your wealth
+                A unified path to better credit.
               </h1>
               <p className="mt-4 text-lg text-white/80 md:text-xl">
-                Origin is your personal AI Financial Advisor. Track your
-                spending, investments, net worth and optimize your financial
+                The Circle is your personal AI Financial Advisor. Track your
+                spending, get insights, and optimize your financial
                 future—all in one place.
               </p>
-              <Button asChild size="lg" className="mt-8">
+              <Button asChild size="lg" className="mt-8 bg-gradient-to-r from-primary to-accent text-white">
                 <Link href="/signup">
                   Get Started <ArrowRight className="ml-2" />
                 </Link>
               </Button>
-              <div className="relative mx-auto mt-8 max-w-md">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Search className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <input
-                  type="text"
-                  className="w-full rounded-full border border-border/30 bg-background/50 py-3 pl-10 pr-12 text-foreground placeholder:text-muted-foreground backdrop-blur-sm"
-                  placeholder="Can I retire by 60?"
-                />
-                <Button
-                  size="icon"
-                  className="absolute inset-y-1 right-1 h-10 w-10 rounded-full"
-                >
-                  <ArrowRight />
-                </Button>
-              </div>
             </div>
           </div>
         </section>
@@ -106,6 +99,9 @@ export default function LandingPage() {
             <h2 className="font-headline text-4xl font-bold md:text-6xl">
               Simplify your money
             </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-muted-foreground md:text-lg">
+                Connect all your financial accounts in one place to get a complete picture of your wealth and unlock personalized insights.
+            </p>
             <div className="relative mx-auto mt-12 max-w-4xl">
               {phoneImage && (
                 <Image
@@ -113,7 +109,7 @@ export default function LandingPage() {
                   alt={phoneImage.description}
                   width={1000}
                   height={563}
-                  className="rounded-2xl"
+                  className="rounded-2xl shadow-2xl"
                    data-ai-hint={phoneImage.imageHint}
                 />
               )}
@@ -127,7 +123,7 @@ export default function LandingPage() {
             Built by You, Powered by The Circle.
           </p>
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} The Circle Inc.
+            &copy; {new Date().getFullYear()} The Circle Inc. All rights reserved.
           </p>
         </div>
       </footer>

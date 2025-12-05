@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppLogo } from '@/components/app-logo';
@@ -12,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowRight, CreditCard, ShieldCheck, TrendingUp, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, CreditCard, ShieldCheck, TrendingUp, Eye, EyeOff, Loader } from 'lucide-react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useFirebase } from '@/firebase/provider';
 import { useToast } from '@/hooks/use-toast';
@@ -50,6 +49,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   
   const handleSignup = async () => {
     if (password !== confirmPassword) {
@@ -60,6 +60,7 @@ export default function SignupPage() {
       });
       return;
     }
+    setIsLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, {
@@ -67,7 +68,7 @@ export default function SignupPage() {
       });
       toast({
         title: 'Account Created!',
-        description: "You've successfully signed up. Please proceed to the next step.",
+        description: "You've successfully signed up. Let's set up your goals.",
       });
       setStep(prev => (prev < totalSteps ? prev + 1 : prev));
     } catch (error: any) {
@@ -82,6 +83,8 @@ export default function SignupPage() {
         title: 'Sign-up Failed',
         description: description,
       });
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -106,22 +109,23 @@ export default function SignupPage() {
             <CardContent className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="full-name">Full Name</Label>
-                <Input id="full-name" placeholder="John Doe" required value={fullName} onChange={e => setFullName(e.target.value)} />
+                <Input id="full-name" placeholder="John Doe" required value={fullName} onChange={e => setFullName(e.target.value)} disabled={isLoading} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={e => setEmail(e.target.value)} />
+                <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} />
+                  <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} disabled={isLoading} />
                    <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
                     onClick={() => setShowPassword(prev => !prev)}
+                    disabled={isLoading}
                   >
                     {showPassword ? <EyeOff /> : <Eye />}
                   </Button>
@@ -130,13 +134,14 @@ export default function SignupPage() {
               <div className="grid gap-2">
                 <Label htmlFor="confirm-password">Confirm Password</Label>
                 <div className="relative">
-                  <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                  <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} disabled={isLoading} />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
                     onClick={() => setShowConfirmPassword(prev => !prev)}
+                    disabled={isLoading}
                   >
                     {showConfirmPassword ? <EyeOff /> : <Eye />}
                   </Button>
@@ -184,7 +189,8 @@ export default function SignupPage() {
           ) : <div></div>}
           
           {step < totalSteps ? (
-             <Button onClick={nextStep} className="bg-gradient-to-r from-primary to-accent text-white">
+             <Button onClick={nextStep} className="bg-gradient-to-r from-primary to-accent text-white" disabled={isLoading}>
+              {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
               Continue <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
