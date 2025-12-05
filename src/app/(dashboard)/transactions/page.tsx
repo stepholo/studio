@@ -1,3 +1,4 @@
+'use client';
 import {
   Table,
   TableBody,
@@ -12,19 +13,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { mockTransactions } from "@/lib/data"
+import { Card, CardContent } from "@/components/ui/card"
 import type { Transaction } from "@/lib/types"
+import { useUser } from "@/firebase/auth/use-user"
+import { useCollection } from "@/firebase/firestore/use-collection"
+import { collection } from "firebase/firestore"
+import { useFirebase } from "@/firebase/provider"
+import { Loader2 } from "lucide-react"
 
-const categoryIcons = {
-  Income: 'text-green-500',
-  Spending: 'text-yellow-500',
-  Loans: 'text-blue-500',
-  Savings: 'text-purple-500',
-};
-
-const TransactionsTable = ({ transactions }: { transactions: Transaction[] }) => (
+const TransactionsTable = ({ transactions, loading }: { transactions: Transaction[], loading: boolean }) => (
   <Card>
     <CardContent className="p-0">
       <Table>
@@ -37,19 +34,33 @@ const TransactionsTable = ({ transactions }: { transactions: Transaction[] }) =>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {transactions.map((tx) => (
-            <TableRow key={tx.id} className="hover:bg-muted/50">
-              <TableCell>
-                <div className="font-medium">{tx.description}</div>
-                <div className="text-sm text-muted-foreground">{tx.account}</div>
-              </TableCell>
-              <TableCell className="hidden sm:table-cell">{tx.institution}</TableCell>
-              <TableCell className="hidden md:table-cell">{tx.date}</TableCell>
-              <TableCell className={`text-right font-mono ${tx.amount > 0 ? 'text-green-500' : ''}`}>
-                {tx.amount.toLocaleString('en-US', { style: 'currency', currency: 'KES', signDisplay: 'auto' })}
+          {loading ? (
+            <TableRow>
+              <TableCell colSpan={4} className="h-24 text-center">
+                <Loader2 className="h-6 w-6 animate-spin inline-block" />
               </TableCell>
             </TableRow>
-          ))}
+          ) : transactions.length > 0 ? (
+            transactions.map((tx) => (
+              <TableRow key={tx.id} className="hover:bg-muted/50">
+                <TableCell>
+                  <div className="font-medium">{tx.description}</div>
+                  <div className="text-sm text-muted-foreground">{tx.account}</div>
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">{tx.institution}</TableCell>
+                <TableCell className="hidden md:table-cell">{tx.date}</TableCell>
+                <TableCell className={`text-right font-mono ${tx.amount > 0 ? 'text-green-500' : ''}`}>
+                  {tx.amount.toLocaleString('en-US', { style: 'currency', currency: 'KES', signDisplay: 'auto' })}
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+             <TableRow>
+              <TableCell colSpan={4} className="h-24 text-center">
+                No transactions found.
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </CardContent>
@@ -57,11 +68,16 @@ const TransactionsTable = ({ transactions }: { transactions: Transaction[] }) =>
 );
 
 export default function TransactionsPage() {
-  const allTransactions = mockTransactions;
-  const incomeTransactions = mockTransactions.filter(tx => tx.category === 'Income');
-  const spendingTransactions = mockTransactions.filter(tx => tx.category === 'Spending');
-  const loanTransactions = mockTransactions.filter(tx => tx.category === 'Loans');
-  const savingsTransactions = mockTransactions.filter(tx => tx.category === 'Savings');
+  const { user } = useUser();
+  const { db } = useFirebase();
+
+  const transactionsRef = user ? collection(db, 'users', user.uid, 'transactions') : null;
+  const { data: allTransactions, loading } = useCollection<Transaction>(transactionsRef);
+
+  const incomeTransactions = allTransactions?.filter(tx => tx.category === 'Income') ?? [];
+  const spendingTransactions = allTransactions?.filter(tx => tx.category === 'Spending') ?? [];
+  const loanTransactions = allTransactions?.filter(tx => tx.category === 'Loans') ?? [];
+  const savingsTransactions = allTransactions?.filter(tx => tx.category === 'Savings') ?? [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -79,19 +95,19 @@ export default function TransactionsPage() {
           <TabsTrigger value="savings">Savings</TabsTrigger>
         </TabsList>
         <TabsContent value="all">
-          <TransactionsTable transactions={allTransactions} />
+          <TransactionsTable transactions={allTransactions ?? []} loading={loading} />
         </TabsContent>
         <TabsContent value="income">
-          <TransactionsTable transactions={incomeTransactions} />
+          <TransactionsTable transactions={incomeTransactions} loading={loading} />
         </TabsContent>
         <TabsContent value="spending">
-          <TransactionsTable transactions={spendingTransactions} />
+          <TransactionsTable transactions={spendingTransactions} loading={loading} />
         </TabsContent>
         <TabsContent value="loans">
-          <TransactionsTable transactions={loanTransactions} />
+          <TransactionsTable transactions={loanTransactions} loading={loading} />
         </TabsContent>
         <TabsContent value="savings">
-          <TransactionsTable transactions={savingsTransactions} />
+          <TransactionsTable transactions={savingsTransactions} loading={loading} />
         </TabsContent>
       </Tabs>
     </div>

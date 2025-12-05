@@ -1,3 +1,5 @@
+import { type LucideIcon } from "lucide-react";
+
 export type User = {
   name: string;
   avatarUrl: string;
@@ -17,7 +19,7 @@ export type Transaction = {
 
 export type Institution = {
   name: string;
-  logo: React.ComponentType<{ className?: string }>;
+  logo: string; // Changed from LucideIcon
   status: 'Connected' | 'Not Connected';
   type: 'M-Pesa' | 'Bank' | 'SACCO' | 'Digital Lender' | 'CRB';
 };
@@ -27,4 +29,12 @@ export type CreditScoreInfo = {
   change: number;
   lastUpdated: string;
   provider: string;
+};
+
+export type UserProfile = {
+  id: string;
+  fullName: string;
+  email: string;
+  goals: string[];
+  creditScore: CreditScoreInfo;
 };

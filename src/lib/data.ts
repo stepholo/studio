@@ -1,5 +1,4 @@
 import type { User, CreditScoreInfo, Institution, Transaction } from '@/lib/types';
-import { Landmark, Smartphone, PiggyBank, CircleDollarSign, HandCoins } from 'lucide-react';
 
 export const mockUser: User = {
   name: 'Alex Doe',
@@ -14,48 +13,41 @@ export const mockCreditScore: CreditScoreInfo = {
   provider: 'The Circle Unified Score',
 };
 
-export const mockInstitutions: Institution[] = [
+export const mockInstitutions: Omit<Institution, 'status'>[] = [
   {
     name: 'M-Pesa',
-    logo: Smartphone,
-    status: 'Connected',
+    logo: 'Smartphone',
     type: 'M-Pesa',
   },
   {
     name: 'Equity Bank',
-    logo: Landmark,
-    status: 'Connected',
+    logo: 'Landmark',
     type: 'Bank',
   },
   {
     name: 'Stima SACCO',
-    logo: PiggyBank,
-    status: 'Not Connected',
+    logo: 'PiggyBank',
     type: 'SACCO',
   },
   {
     name: 'Tala',
-    logo: CircleDollarSign,
-    status: 'Connected',
+    logo: 'CircleDollarSign',
     type: 'Digital Lender',
   },
   {
     name: 'Metropol CRB',
-    logo: HandCoins,
-    status: 'Not Connected',
+    logo: 'HandCoins',
     type: 'CRB',
   },
     {
     name: 'KCB Bank',
-    logo: Landmark,
-    status: 'Not Connected',
+    logo: 'Landmark',
     type: 'Bank',
   },
 ];
 
-export const mockTransactions: Transaction[] = [
+export const mockTransactions: Omit<Transaction, 'id'>[] = [
   {
-    id: 'txn1',
     institution: 'Equity Bank',
     account: '**** 1234',
     date: '2024-07-20',
@@ -65,7 +57,6 @@ export const mockTransactions: Transaction[] = [
     currency: 'KES',
   },
   {
-    id: 'txn2',
     institution: 'M-Pesa',
     account: '*** *** 7890',
     date: '2024-07-19',
@@ -75,7 +66,6 @@ export const mockTransactions: Transaction[] = [
     currency: 'KES',
   },
   {
-    id: 'txn3',
     institution: 'Tala',
     account: 'Loan #5678',
     date: '2024-07-15',
@@ -85,7 +75,6 @@ export const mockTransactions: Transaction[] = [
     currency: 'KES',
   },
   {
-    id: 'txn4',
     institution: 'Equity Bank',
     account: '**** 5678',
     date: '2024-07-10',
@@ -95,7 +84,6 @@ export const mockTransactions: Transaction[] = [
     currency: 'KES',
   },
   {
-    id: 'txn5',
     institution: 'M-Pesa',
     account: '*** *** 7890',
     date: '2024-07-05',
@@ -105,7 +93,6 @@ export const mockTransactions: Transaction[] = [
     currency: 'KES',
   },
   {
-    id: 'txn6',
     institution: 'Tala',
     account: 'Loan #5678',
     date: '2024-06-25',
@@ -115,7 +102,6 @@ export const mockTransactions: Transaction[] = [
     currency: 'KES',
   },
   {
-    id: 'txn7',
     institution: 'Equity Bank',
     account: '**** 1234',
     date: '2024-06-20',

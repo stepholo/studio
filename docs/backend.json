@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile information.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The user's unique ID." },
+        "fullName": { "type": "string", "description": "The user's full name." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "goals": { "type": "array", "items": { "type": "string" }, "description": "User's financial goals." },
+        "creditScore": { "$ref": "#/entities/CreditScoreInfo" }
+      },
+      "required": ["id", "fullName", "email"]
+    },
+    "CreditScoreInfo": {
+      "title": "Credit Score Information",
+      "description": "Represents the user's credit score details.",
+      "type": "object",
+      "properties": {
+        "score": { "type": "number" },
+        "change": { "type": "number" },
+        "lastUpdated": { "type": "string" },
+        "provider": { "type": "string" }
+      }
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Represents a single financial transaction.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "institution": { "type": "string" },
+        "account": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "description": { "type": "string" },
+        "category": { "type": "string", "enum": ["Income", "Spending", "Loans", "Savings"] },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" }
+      },
+      "required": ["id", "description", "amount", "date", "category"]
+    },
+    "Institution": {
+      "title": "Financial Institution",
+      "description": "Represents a financial institution connected by the user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "logo": { "type": "string" },
+        "status": { "type": "string", "enum": ["Connected", "Not Connected"] },
+        "type": { "type": "string", "enum": ["M-Pesa", "Bank", "SACCO", "Digital Lender", "CRB"] }
+      },
+      "required": ["id", "name", "status", "type"]
+    }
+  },
+  "auth": {
+    "providers": ["email"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores user profile data."
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "Stores a user's financial transactions."
+    },
+    "/users/{userId}/institutions/{institutionId}": {
+      "schema": { "$ref": "#/entities/Institution" },
+      "description": "Stores a user's connected financial institutions."
+    }
+  }
+}

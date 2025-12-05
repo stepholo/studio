@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppLogo } from '@/components/app-logo';
@@ -15,6 +16,8 @@ import { ArrowRight, CreditCard, ShieldCheck, TrendingUp, Eye, EyeOff, Loader } 
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useFirebase } from '@/firebase/provider';
 import { useToast } from '@/hooks/use-toast';
+import { doc, setDoc, writeBatch } from 'firebase/firestore';
+import { mockCreditScore, mockInstitutions, mockTransactions } from '@/lib/data';
 
 
 const totalSteps = 2;
@@ -38,7 +41,7 @@ const pageTransition = {
 };
 
 export default function SignupPage() {
-  const { auth } = useFirebase();
+  const { auth, db } = useFirebase();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
@@ -49,8 +52,41 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
+  const seedInitialData = async (userId: string) => {
+    const batch = writeBatch(db);
+
+    // Seed user profile
+    const userProfileRef = doc(db, 'users', userId);
+    const userProfileData = {
+      id: userId,
+      fullName: fullName,
+      email: email,
+      goals: selectedGoals,
+      creditScore: mockCreditScore
+    };
+    batch.set(userProfileRef, userProfileData);
+
+    // Seed transactions
+    const transactionsRef = doc(db, 'users', userId, 'transactions', 'initial-data');
+    mockTransactions.forEach((transaction, index) => {
+        const transRef = doc(db, 'users', userId, 'transactions', `txn${index+1}`);
+        batch.set(transRef, transaction);
+    });
+
+    // Seed institutions
+    mockInstitutions.forEach(inst => {
+      const docRef = doc(db, 'users', userId, 'institutions', inst.name.toLowerCase().replace(' ', '-'));
+      const initialStatus = inst.name === 'Equity Bank' || inst.name === 'M-Pesa' || inst.name === 'Tala' ? 'Connected' : 'Not Connected';
+      batch.set(docRef, { ...inst, status: initialStatus });
+    });
+
+    await batch.commit();
+  };
+
+
   const handleSignup = async () => {
     if (password !== confirmPassword) {
       toast({
@@ -88,6 +124,31 @@ export default function SignupPage() {
     }
   };
 
+  const handleFinishSetup = async () => {
+    if (!auth.currentUser) {
+        toast({ variant: 'destructive', title: 'Error', description: 'No user is signed in.' });
+        return;
+    }
+    setIsLoading(true);
+    try {
+        await seedInitialData(auth.currentUser.uid);
+        toast({
+            title: "Setup Complete!",
+            description: "Your dashboard is ready.",
+        });
+        router.push('/dashboard');
+    } catch(error) {
+        console.error("Error finishing setup: ", error);
+        toast({
+            variant: 'destructive',
+            title: 'Setup Failed',
+            description: 'Could not initialize your account data. Please try again.',
+        });
+    } finally {
+        setIsLoading(false);
+    }
+  }
+
   const nextStep = () => {
      if (step === 1) {
         handleSignup();
@@ -96,6 +157,12 @@ export default function SignupPage() {
     }
   }
   const prevStep = () => setStep(prev => (prev > 1 ? prev - 1 : prev));
+
+  const handleGoalSelection = (goalId: string, checked: boolean) => {
+    setSelectedGoals(prev => 
+      checked ? [...prev, goalId] : prev.filter(g => g !== goalId)
+    );
+  };
 
   const renderStep = () => {
     switch (step) {
@@ -164,7 +231,10 @@ export default function SignupPage() {
                   <div className="flex-1">
                     <Label htmlFor={goal.id} className="font-medium">{goal.label}</Label>
                   </div>
-                  <Checkbox id={goal.id} />
+                  <Checkbox 
+                    id={goal.id} 
+                    onCheckedChange={(checked) => handleGoalSelection(goal.id, Boolean(checked))}
+                  />
                 </div>
               ))}
             </CardContent>
@@ -194,7 +264,8 @@ export default function SignupPage() {
               Continue <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={() => router.push('/dashboard')} className="w-full bg-gradient-to-r from-primary to-accent text-white">
+            <Button onClick={handleFinishSetup} className="w-full bg-gradient-to-r from-primary to-accent text-white" disabled={isLoading}>
+              {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
               Enter Dashboard
             </Button>
           )}

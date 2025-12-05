@@ -22,11 +22,42 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { CreditScoreWidget } from "@/components/credit-score-widget"
-import { mockCreditScore, mockTransactions } from "@/lib/data"
-import { Triangle, ArrowUpRight, Activity, DollarSign } from "lucide-react"
+import { Triangle, ArrowUpRight, Activity, DollarSign, Loader2 } from "lucide-react"
+import { useUser } from "@/firebase/auth/use-user";
+import { useDoc } from "@/firebase/firestore/use-doc";
+import { useCollection } from "@/firebase/firestore/use-collection";
+import { collection, doc } from "firebase/firestore";
+import { useFirebase } from "@/firebase/provider";
+import type { Transaction, UserProfile } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
-  const recentTransactions = mockTransactions.slice(0, 5);
+  const { user } = useUser();
+  const { db } = useFirebase();
+
+  const userProfileRef = user ? doc(db, 'users', user.uid) : null;
+  const { data: userProfile, loading: profileLoading } = useDoc<UserProfile>(userProfileRef);
+
+  const transactionsRef = user ? collection(db, 'users', user.uid, 'transactions') : null;
+  const { data: transactions, loading: transactionsLoading } = useCollection<Transaction>(transactionsRef);
+
+  const loading = profileLoading || transactionsLoading;
+  const recentTransactions = transactions?.slice(0, 5) ?? [];
+
+  if (loading) {
+    return (
+        <div className="flex flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+            <Skeleton className="h-20 w-full" />
+             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Skeleton className="lg:col-span-2 row-span-2 h-96" />
+                <Skeleton className="h-32" />
+                <Skeleton className="h-32" />
+                <Skeleton className="lg:col-span-2 h-40" />
+            </div>
+            <Skeleton className="h-96" />
+        </div>
+    )
+  }
 
   return (
     <>
@@ -40,19 +71,19 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="lg:col-span-2 row-span-2 flex flex-col justify-between">
           <CardHeader className="pb-2">
-            <CardDescription>{mockCreditScore.provider}</CardDescription>
+            <CardDescription>{userProfile?.creditScore?.provider}</CardDescription>
             <div className="flex items-baseline gap-2">
               <CardTitle className="text-4xl font-headline">
-                {mockCreditScore.score}
+                {userProfile?.creditScore?.score}
               </CardTitle>
               <div className="flex items-center text-green-500">
                 <ArrowUpRight className="h-4 w-4" />
-                <span>+{mockCreditScore.change} this month</span>
+                <span>+{userProfile?.creditScore?.change} this month</span>
               </div>
             </div>
           </CardHeader>
           <CardContent className="p-0">
-             <CreditScoreWidget score={mockCreditScore.score} className="w-full h-64 md:h-80" />
+             <CreditScoreWidget score={userProfile?.creditScore?.score ?? 0} className="w-full h-64 md:h-80" />
           </CardContent>
         </Card>
         <Card>
