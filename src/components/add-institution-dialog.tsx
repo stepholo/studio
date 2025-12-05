@@ -23,7 +23,7 @@ import {
 import { Loader2, PlusCircle, Smartphone, PiggyBank, CircleDollarSign, HandCoins, Landmark } from 'lucide-react';
 import { useFirebase } from '@/firebase/provider';
 import { useUser } from '@/firebase/auth/use-user';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 const institutionTypes = [
@@ -66,12 +66,15 @@ export function AddInstitutionDialog({ children }: { children: React.ReactNode }
     setIsLoading(true);
     try {
       const institutionsRef = collection(db, 'users', user.uid, 'institutions');
-      await addDoc(institutionsRef, {
+      const docRef = await addDoc(institutionsRef, {
         name,
         type,
         status: 'Not Connected',
         logo: iconMap[type] || 'Landmark',
+        createdAt: serverTimestamp(),
       });
+      
+      // The document now has an ID. We can use it if needed.
 
       toast({
         title: 'Institution Added',

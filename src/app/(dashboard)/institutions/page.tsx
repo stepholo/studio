@@ -18,6 +18,7 @@ import type { Institution } from "@/lib/types";
 import { mockInstitutions } from "@/lib/data";
 import React from "react";
 import { AddInstitutionDialog } from '@/components/add-institution-dialog';
+import { Skeleton } from "@/components/ui/skeleton";
 
 const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
   Smartphone,
@@ -66,8 +67,22 @@ export default function InstitutionsPage() {
         </AddInstitutionDialog>
       </div>
       {loading && (
-        <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+                <Card key={i}>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-4 w-1/4" />
+                    </CardHeader>
+                    <CardContent>
+                         <Skeleton className="h-4 w-full" />
+                         <Skeleton className="h-4 w-5/6 mt-2" />
+                    </CardContent>
+                    <CardFooter className="flex justify-end">
+                        <Skeleton className="h-10 w-24" />
+                    </CardFooter>
+                </Card>
+            ))}
         </div>
       )}
       {!loading && institutions && institutions.length === 0 && (
