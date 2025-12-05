@@ -1,3 +1,16 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "login-illustration",
+      "description": "A youth-friendly illustration of a character using fintech on a phone for the login page.",
+      "imageUrl": "https://images.unsplash.com/photo-1629988173560-03bb8d42b9ef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxmaW50ZWNoJTIweW91dGh8ZW58MHx8fHwxNzY0OTI3NDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fintech youth"
+    },
+    {
+      "id": "signup-secure-shield",
+      "description": "An illustration of a secure shield or circle for the final step of the signup flow.",
+      "imageUrl": "https://images.unsplash.com/photo-1758371541371-874cdcede945?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzZWN1cmUlMjBzaGllbGR8ZW58MHx8fHwxNzY0OTI3NDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "secure shield"
+    }
+  ]
 }
