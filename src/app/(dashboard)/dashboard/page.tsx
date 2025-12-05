@@ -30,15 +30,16 @@ import { collection, doc } from "firebase/firestore";
 import { useFirebase } from "@/firebase/provider";
 import type { Transaction, UserProfile } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import React from "react";
 
 export default function DashboardPage() {
   const { user } = useUser();
   const { db } = useFirebase();
 
-  const userProfileRef = user ? doc(db, 'users', user.uid) : null;
+  const userProfileRef = React.useMemo(() => user ? doc(db, 'users', user.uid) : null, [user, db]);
   const { data: userProfile, loading: profileLoading } = useDoc<UserProfile>(userProfileRef);
 
-  const transactionsRef = user ? collection(db, 'users', user.uid, 'transactions') : null;
+  const transactionsRef = React.useMemo(() => user ? collection(db, 'users', user.uid, 'transactions') : null, [user, db]);
   const { data: transactions, loading: transactionsLoading } = useCollection<Transaction>(transactionsRef);
 
   const loading = profileLoading || transactionsLoading;

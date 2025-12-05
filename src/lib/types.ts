@@ -18,6 +18,7 @@ export type Transaction = {
 };
 
 export type Institution = {
+  id?: string;
   name: string;
   logo: string; // Changed from LucideIcon
   status: 'Connected' | 'Not Connected';

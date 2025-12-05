@@ -17,9 +17,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import type { Transaction } from "@/lib/types"
 import { useUser } from "@/firebase/auth/use-user"
 import { useCollection } from "@/firebase/firestore/use-collection"
-import { collection } from "firebase/firestore"
+import { collection, query, where } from "firebase/firestore"
 import { useFirebase } from "@/firebase/provider"
 import { Loader2 } from "lucide-react"
+import React from "react"
 
 const TransactionsTable = ({ transactions, loading }: { transactions: Transaction[], loading: boolean }) => (
   <Card>
@@ -71,13 +72,14 @@ export default function TransactionsPage() {
   const { user } = useUser();
   const { db } = useFirebase();
 
-  const transactionsRef = user ? collection(db, 'users', user.uid, 'transactions') : null;
+  const transactionsRef = React.useMemo(() => user ? collection(db, 'users', user.uid, 'transactions') : null, [user, db]);
+  
   const { data: allTransactions, loading } = useCollection<Transaction>(transactionsRef);
+  const { data: incomeTransactions, loading: incomeLoading } = useCollection<Transaction>(transactionsRef, { queryConstraints: [where('category', '==', 'Income')] });
+  const { data: spendingTransactions, loading: spendingLoading } = useCollection<Transaction>(transactionsRef, { queryConstraints: [where('category', '==', 'Spending')] });
+  const { data: loanTransactions, loading: loanLoading } = useCollection<Transaction>(transactionsRef, { queryConstraints: [where('category', '==', 'Loans')] });
+  const { data: savingsTransactions, loading: savingsLoading } = useCollection<Transaction>(transactionsRef, { queryConstraints: [where('category', '==', 'Savings')] });
 
-  const incomeTransactions = allTransactions?.filter(tx => tx.category === 'Income') ?? [];
-  const spendingTransactions = allTransactions?.filter(tx => tx.category === 'Spending') ?? [];
-  const loanTransactions = allTransactions?.filter(tx => tx.category === 'Loans') ?? [];
-  const savingsTransactions = allTransactions?.filter(tx => tx.category === 'Savings') ?? [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -98,16 +100,16 @@ export default function TransactionsPage() {
           <TransactionsTable transactions={allTransactions ?? []} loading={loading} />
         </TabsContent>
         <TabsContent value="income">
-          <TransactionsTable transactions={incomeTransactions} loading={loading} />
+          <TransactionsTable transactions={incomeTransactions ?? []} loading={incomeLoading} />
         </TabsContent>
         <TabsContent value="spending">
-          <TransactionsTable transactions={spendingTransactions} loading={loading} />
+          <TransactionsTable transactions={spendingTransactions ?? []} loading={spendingLoading} />
         </TabsContent>
         <TabsContent value="loans">
-          <TransactionsTable transactions={loanTransactions} loading={loading} />
+          <TransactionsTable transactions={loanTransactions ?? []} loading={loanLoading} />
         </TabsContent>
         <TabsContent value="savings">
-          <TransactionsTable transactions={savingsTransactions} loading={loading} />
+          <TransactionsTable transactions={savingsTransactions ?? []} loading={savingsLoading} />
         </TabsContent>
       </Tabs>
     </div>

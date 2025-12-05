@@ -16,6 +16,7 @@ import { collection, doc, writeBatch } from "firebase/firestore";
 import { useFirebase } from "@/firebase/provider";
 import type { Institution } from "@/lib/types";
 import { mockInstitutions } from "@/lib/data";
+import React from "react";
 
 const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
   Smartphone,
@@ -29,7 +30,7 @@ export default function InstitutionsPage() {
   const { user } = useUser();
   const { db } = useFirebase();
 
-  const institutionsRef = user ? collection(db, 'users', user.uid, 'institutions') : null;
+  const institutionsRef = React.useMemo(() => user ? collection(db, 'users', user.uid, 'institutions') : null, [user, db]);
   const { data: institutions, loading } = useCollection<Institution>(institutionsRef);
 
   const connectInstitution = async (institutionName: string) => {
@@ -37,7 +38,7 @@ export default function InstitutionsPage() {
     // In a real app, this would involve an OAuth flow.
     // Here we'll just update the status in Firestore.
     const institutionDoc = institutions?.find(inst => inst.name === institutionName);
-    if(institutionDoc) {
+    if(institutionDoc && institutionDoc.id) {
       const docRef = doc(db, 'users', user.uid, 'institutions', institutionDoc.id);
       const batch = writeBatch(db);
       batch.update(docRef, { status: 'Connected' });
@@ -49,9 +50,9 @@ export default function InstitutionsPage() {
     if (!user || !institutionsRef) return;
     const batch = writeBatch(db);
     mockInstitutions.forEach(inst => {
-      const docRef = doc(institutionsRef, inst.name.toLowerCase().replace(' ', '-'));
+      const docRef = doc(institutionsRef, inst.name.toLowerCase().replace(/ /g, '-'));
       const initialStatus = inst.name === 'Equity Bank' || inst.name === 'M-Pesa' || inst.name === 'Tala' ? 'Connected' : 'Not Connected';
-      batch.set(docRef, { ...inst, status: initialStatus });
+      batch.set(docRef, { ...inst, status: initialStatus, id: docRef.id });
     });
     await batch.commit();
   }
@@ -87,7 +88,7 @@ export default function InstitutionsPage() {
       )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {institutions?.map((inst) => {
+        {institutions?.map((inst: any) => {
             const Icon = iconMap[inst.logo] || Landmark;
             return (
               <Card key={inst.id} className="flex flex-col">
