@@ -11,7 +11,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -20,13 +19,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, PlusCircle, Smartphone, PiggyBank, CircleDollarSign, HandCoins, Landmark } from 'lucide-react';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Loader2, PlusCircle, Smartphone, PiggyBank, CircleDollarSign, HandCoins, Landmark, ChevronsUpDown, Check } from 'lucide-react';
 import { useFirebase } from '@/firebase/provider';
 import { useUser } from '@/firebase/auth/use-user';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { kenyanFinancialInstitutions } from '@/lib/data';
+import { cn } from '@/lib/utils';
 
 const institutionTypes = [
   { value: 'Bank', label: 'Bank', icon: Landmark },
@@ -53,6 +67,7 @@ export function AddInstitutionDialog({ children }: { children: React.ReactNode }
   const [name, setName] = useState('');
   const [type, setType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,14 +135,53 @@ export function AddInstitutionDialog({ children }: { children: React.ReactNode }
               <Label htmlFor="name" className="text-right">
                 Name
               </Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="col-span-3"
-                placeholder="e.g., KCB Bank, M-Shwari"
-                required
-              />
+               <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={popoverOpen}
+                    className="col-span-3 justify-between"
+                  >
+                    {name
+                      ? kenyanFinancialInstitutions.find((inst) => inst.name.toLowerCase() === name.toLowerCase())?.name
+                      : "Select institution..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search institution..." />
+                    <CommandList>
+                      <CommandEmpty>No institution found.</CommandEmpty>
+                      <CommandGroup>
+                        {kenyanFinancialInstitutions.map((inst) => (
+                          <CommandItem
+                            key={inst.name}
+                            value={inst.name}
+                            onSelect={(currentValue) => {
+                              const selected = kenyanFinancialInstitutions.find(i => i.name.toLowerCase() === currentValue.toLowerCase());
+                              if (selected) {
+                                  setName(selected.name);
+                                  setType(selected.type);
+                              }
+                              setPopoverOpen(false)
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                name.toLowerCase() === inst.name.toLowerCase() ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {inst.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="type" className="text-right">
@@ -151,7 +205,7 @@ export function AddInstitutionDialog({ children }: { children: React.ReactNode }
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading || !name || !type}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {isLoading ? 'Adding...' : 'Add Institution'}
             </Button>
