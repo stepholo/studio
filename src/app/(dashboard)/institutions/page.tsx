@@ -12,11 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Upload, RefreshCw, Smartphone, PiggyBank, CircleDollarSign, HandCoins, Landmark, Loader2 } from "lucide-react";
 import { useUser } from "@/firebase/auth/use-user";
 import { useCollection } from "@/firebase/firestore/use-collection";
-import { collection, doc, writeBatch } from "firebase/firestore";
+import { collection, doc, updateDoc, writeBatch } from "firebase/firestore";
 import { useFirebase } from "@/firebase/provider";
 import type { Institution } from "@/lib/types";
 import { mockInstitutions } from "@/lib/data";
 import React from "react";
+import { AddInstitutionDialog } from '@/components/add-institution-dialog';
 
 const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
   Smartphone,
@@ -29,33 +30,27 @@ const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = 
 export default function InstitutionsPage() {
   const { user } = useUser();
   const { db } = useFirebase();
+  const [connectingId, setConnectingId] = React.useState<string | null>(null);
 
   const institutionsRef = React.useMemo(() => user ? collection(db, 'users', user.uid, 'institutions') : null, [user, db]);
   const { data: institutions, loading } = useCollection<Institution>(institutionsRef);
 
-  const connectInstitution = async (institutionName: string) => {
-     if (!user || !institutionsRef) return;
+  const connectInstitution = async (institution: Institution) => {
+     if (!user || !institution.id) return;
+    setConnectingId(institution.id);
+    
     // In a real app, this would involve an OAuth flow.
     // Here we'll just update the status in Firestore.
-    const institutionDoc = institutions?.find(inst => inst.name === institutionName);
-    if(institutionDoc && institutionDoc.id) {
-      const docRef = doc(db, 'users', user.uid, 'institutions', institutionDoc.id);
-      const batch = writeBatch(db);
-      batch.update(docRef, { status: 'Connected' });
-      await batch.commit();
+    try {
+        const docRef = doc(db, 'users', user.uid, 'institutions', institution.id);
+        await updateDoc(docRef, { status: 'Connected' });
+    } catch (error) {
+        console.error("Failed to connect institution:", error);
+    } finally {
+        setConnectingId(null);
     }
   };
 
-  const seedInstitutions = async () => {
-    if (!user || !institutionsRef) return;
-    const batch = writeBatch(db);
-    mockInstitutions.forEach(inst => {
-      const docRef = doc(institutionsRef, inst.name.toLowerCase().replace(/ /g, '-'));
-      const initialStatus = inst.name === 'Equity Bank' || inst.name === 'M-Pesa' || inst.name === 'Tala' ? 'Connected' : 'Not Connected';
-      batch.set(docRef, { ...inst, status: initialStatus, id: docRef.id });
-    });
-    await batch.commit();
-  }
 
   return (
     <>
@@ -64,9 +59,11 @@ export default function InstitutionsPage() {
           <h1 className="text-3xl font-headline font-bold">Your Connected Institutions</h1>
           <p className="text-muted-foreground">Manage your financial accounts to build your score.</p>
         </div>
-        <Button onClick={seedInstitutions}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Institution
-        </Button>
+        <AddInstitutionDialog>
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Institution
+          </Button>
+        </AddInstitutionDialog>
       </div>
       {loading && (
         <div className="flex justify-center items-center h-64">
@@ -74,22 +71,25 @@ export default function InstitutionsPage() {
         </div>
       )}
       {!loading && institutions && institutions.length === 0 && (
-         <Card className="flex flex-col items-center justify-center h-64 text-center p-8">
+         <Card className="flex flex-col items-center justify-center h-64 text-center p-8 border-dashed">
             <CardHeader>
-                <CardTitle>No Institutions Found</CardTitle>
-                <CardDescription>Get started by adding your financial institutions.</CardDescription>
+                <CardTitle>No Institutions Yet</CardTitle>
+                <CardDescription>Get started by adding your financial institutions to build your credit profile.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Button onClick={seedInstitutions}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Your First Institution
-                </Button>
+                <AddInstitutionDialog>
+                  <Button>
+                      <PlusCircle className="mr-2 h-4 w-4" /> Add Your First Institution
+                  </Button>
+                </AddInstitutionDialog>
             </CardContent>
         </Card>
       )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {institutions?.map((inst: any) => {
+        {institutions?.map((inst: Institution) => {
             const Icon = iconMap[inst.logo] || Landmark;
+            const isConnecting = connectingId === inst.id;
             return (
               <Card key={inst.id} className="flex flex-col">
                 <CardHeader className="flex flex-row items-start justify-between">
@@ -112,17 +112,20 @@ export default function InstitutionsPage() {
                   </p>
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2">
-                  {inst.type === "M-Pesa" && (
+                  {inst.type === "M-Pesa" && inst.status === "Connected" && (
                     <Button variant="outline" size="sm">
                       <Upload className="mr-2 h-4 w-4" /> Upload Statement
                     </Button>
                   )}
                   {inst.status === "Connected" ? (
-                    <Button variant="ghost" size="sm">
-                      <RefreshCw className="mr-2 h-4 w-4" /> Auto-Sync
+                    <Button variant="ghost" size="sm" disabled>
+                      <RefreshCw className="mr-2 h-4 w-4" /> Synced
                     </Button>
                   ) : (
-                    <Button size="sm" onClick={() => connectInstitution(inst.name)}>Connect</Button>
+                    <Button size="sm" onClick={() => connectInstitution(inst)} disabled={isConnecting}>
+                      {isConnecting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isConnecting ? 'Connecting...' : 'Connect'}
+                    </Button>
                   )}
                 </CardFooter>
               </Card>

@@ -1,8 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { collection, onSnapshot, Query, DocumentData, query, QueryConstraint } from 'firebase/firestore';
-import { useFirebase } from '@/firebase/provider';
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { onSnapshot, Query, DocumentData, query, QueryConstraint } from 'firebase/firestore';
 
 interface UseCollectionOptions {
     queryConstraints?: QueryConstraint[];
@@ -13,14 +11,17 @@ export function useCollection<T>(ref: Query | null, options?: UseCollectionOptio
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
+    const constraints = options?.queryConstraints;
+
     const q = useMemo(() => {
         if (!ref) return null;
-        return options?.queryConstraints ? query(ref, ...options.queryConstraints) : ref;
-    }, [ref, options?.queryConstraints]);
+        return constraints ? query(ref, ...constraints) : ref;
+    }, [ref, constraints]);
 
     useEffect(() => {
         if (!q) {
             setLoading(false);
+            setData(null);
             return;
         }
 
